@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halloween jelmezverseny – Szavazás</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--plum:#24102e;--plum2:#3b1b4a;--bone:#f4ead6;--ink:#2a1633;--pumpkin:#ff7a1a;--slime:#9be15d;--blood:#c2263b}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:'Rubik',system-ui,sans-serif;color:var(--bone);
+ background:radial-gradient(ellipse at 50% -10%,#6a2a86 0,transparent 55%),radial-gradient(circle at 90% 100%,#4a1f12 0,transparent 40%),var(--plum);
+ display:flex;flex-direction:column;align-items:center;padding:32px 16px 48px}
+.moon{position:fixed;top:28px;right:6vw;width:84px;height:84px;border-radius:50%;
+ background:radial-gradient(circle at 35% 35%,#fff6d8,#f1d98a 60%,#d9b85a);box-shadow:0 0 80px 20px rgba(255,220,130,.25);opacity:.9;pointer-events:none}
+h1{font-family:'Rubik Wet Paint','Impact',sans-serif;font-weight:400;font-size:clamp(2.4rem,9vw,4.2rem);line-height:1;text-align:center;margin:12px 0 8px;color:var(--pumpkin);text-shadow:0 4px 0 #7a2e00,0 0 40px rgba(255,122,26,.35)}
+.sub{max-width:36ch;text-align:center;margin:0 0 28px;color:#d9c7e6;line-height:1.5}
+.ticket{position:relative;width:100%;max-width:440px;background:var(--bone);color:var(--ink);border-radius:18px;padding:30px 28px 28px;
+ box-shadow:0 24px 60px rgba(0,0,0,.5);transform:rotate(-1deg)}
+.ticket::before,.ticket::after{content:"";position:absolute;top:96px;width:28px;height:28px;border-radius:50%;background:var(--plum)}
+.ticket::before{left:-14px}.ticket::after{right:-14px}
+.ticket .perf{border-top:3px dashed #c9b894;margin:0 -6px 22px;padding-top:0}
+.ticket h2{margin:0 0 18px;font-size:1.15rem;font-weight:700}
+label{display:block;font-weight:500;margin-bottom:6px;font-size:.95rem}
+input{width:100%;font:inherit;color:var(--ink);background:#fff9ea;border:2px solid #cdbb95;border-radius:12px;padding:13px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus-visible{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba(255,122,26,.25)}
+.field{margin-bottom:18px}
+#szam{font-family:'Rubik Wet Paint','Impact',sans-serif;font-size:2.6rem;text-align:center;padding:8px 14px;letter-spacing:.05em}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+button{width:100%;font:inherit;font-weight:700;font-size:1.1rem;cursor:pointer;border:0;border-radius:12px;padding:15px;color:#2a1000;
+ background:var(--pumpkin);box-shadow:0 5px 0 #a8480a;transition:transform .08s,box-shadow .08s}
+button:disabled{opacity:.6;cursor:wait}
+button:hover{filter:brightness(1.06)}
+button:active{transform:translateY(4px);box-shadow:0 1px 0 #a8480a}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.msg{min-height:1.4em;margin:14px 0 0;font-weight:500;text-align:center}
+.msg.err{color:var(--blood)}.msg.ok{color:#2c7a12}
+.msg.ok.pop{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.donetxt{font-size:1.15rem;line-height:1.45;margin:0 0 10px}
+.donesub{margin:0;color:#6b4a7a;font-size:.95rem}
+.link{margin-top:26px;color:#d9c7e6;font-size:.95rem}
+.link a{color:var(--slime)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:520px){.moon{width:56px;height:56px;right:16px;top:16px}}
+</style>
+</head>
+<body>
+<div class="moon" aria-hidden="true"></div>
+<h1>Jelmezverseny</h1>
+<p class="sub">Add meg a neved és annak a jelmeznek a sorszámát, amelyikre szavazol.</p>
+
+<main class="ticket" id="form">
+  <div class="perf" aria-hidden="true"></div>
+  <h2>Szavazólap</h2>
+  <div class="field">
+    <label for="nev">Neved</label>
+    <input id="nev" type="text" autocomplete="name" maxlength="60" placeholder="pl. Kovács Anna">
+  </div>
+  <div class="field">
+    <label for="szam">Jelmez sorszáma</label>
+    <input id="szam" type="number" inputmode="numeric" min="1" step="1" placeholder="0">
+  </div>
+  <button id="send" type="button">Szavazat leadása</button>
+  <p id="msg" class="msg" role="status" aria-live="polite"></p>
+</main>
+
+<main class="ticket" id="done" hidden>
+  <div class="perf" aria-hidden="true"></div>
+  <h2>A szavazatod megvan!</h2>
+  <p id="donetxt" class="donetxt"></p>
+  <p class="donesub">Erről az eszközről már nem lehet újra szavazni.</p>
+</main>
+
+<p class="link"><a href="eredmenyek.html">Eredmények megtekintése</a></p>
+
+<script>
+const $=id=>document.getElementById(id);
+const msg=$('msg');
+const VK='halloween_voted';
+function getVoted(){
+  let v=null;try{v=localStorage.getItem(VK)}catch(e){}
+  if(!v){const m=document.cookie.match(/(?:^|; )halloween_voted=([^;]*)/);if(m){try{v=decodeURIComponent(m[1])}catch(e){v='1'}}}
+  if(!v)return null;
+  try{return JSON.parse(v)||{}}catch(e){return {}}
+}
+function setVoted(o){
+  const t=JSON.stringify(o);
+  try{localStorage.setItem(VK,t)}catch(e){}
+  document.cookie=VK+'='+encodeURIComponent(t)+'; max-age=31536000; path=/; SameSite=Lax';
+}
+function showDone(o){
+  $('form').hidden=true;$('done').hidden=false;
+  $('donetxt').textContent=(o&&o.nev&&o.szam)?('Köszi, '+o.nev+'! A(z) '+o.szam+'. jelmezre szavaztál.'):'Erről az eszközről már leadtak egy szavazatot.';
+}
+const btn=$('send');
+function say(t,c){msg.className='msg '+c;msg.textContent=t;if(c==='ok'){void msg.offsetWidth;msg.classList.add('pop')}}
+async function send(){
+  const prev=getVoted();if(prev){showDone(prev);return}
+  const nev=$('nev').value.trim().replace(/\s+/g,' ');
+  const szam=parseInt($('szam').value,10);
+  if(!nev){say('Írd be a neved.','err');$('nev').focus();return}
+  if(!Number.isInteger(szam)||szam<1){say('Adj meg egy érvényes sorszámot (1 vagy nagyobb).','err');$('szam').focus();return}
+  btn.disabled=true;btn.textContent='Küldés...';
+  try{
+    const r=await fetch('/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nev:nev,szam:szam})});
+    if(r.status===409){say(nev+' már szavazott. Egy név csak egyszer szavazhat.','err')}
+    else if(!r.ok){let d={};try{d=await r.json()}catch(e){}say(d.error||'A szavazatot nem sikerült elküldeni. Próbáld újra.','err')}
+    else{const o={nev:nev,szam:szam};setVoted(o);showDone(o)}
+  }catch(e){say('Nincs kapcsolat a szerverrel. Ellenőrizd az internetet, és próbáld újra.','err')}
+  btn.disabled=false;btn.textContent='Szavazat leadása';
+}
+{const prev=getVoted();if(prev)showDone(prev)}
+btn.addEventListener('click',send);
+['nev','szam'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')send()}));
+</script>
+</body>
+</html>

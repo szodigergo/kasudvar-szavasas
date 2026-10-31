@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halloween jelmezverseny – Eredmények</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--plum:#24102e;--plum2:#3b1b4a;--bone:#f4ead6;--pumpkin:#ff7a1a;--slime:#9be15d;--blood:#c2263b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:'Rubik',system-ui,sans-serif;color:var(--bone);
+ background:radial-gradient(ellipse at 50% -10%,#6a2a86 0,transparent 55%),radial-gradient(circle at 90% 100%,#4a1f12 0,transparent 40%),var(--plum);
+ padding:32px 16px 56px}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-family:'Rubik Wet Paint','Impact',sans-serif;font-weight:400;font-size:clamp(2.2rem,8vw,3.8rem);line-height:1;text-align:center;margin:8px 0 6px;color:var(--pumpkin);text-shadow:0 4px 0 #7a2e00,0 0 40px rgba(255,122,26,.35)}
+.total{text-align:center;color:#d9c7e6;margin:0 0 28px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+section{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px}
+h2{margin:0 0 14px;font-size:1.15rem}
+.row{display:grid;grid-template-columns:3.2rem 1fr auto;align-items:center;gap:12px;margin-bottom:10px}
+.num{font-family:'Rubik Wet Paint','Impact',sans-serif;font-size:1.7rem;color:var(--pumpkin);text-align:center}
+.bar{height:16px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pumpkin),#ffb347);border-radius:99px;transition:width .5s}
+.row.first .bar i{background:linear-gradient(90deg,var(--slime),#d4f7a8)}
+.row.first .num{color:var(--slime)}
+.cnt{font-weight:700;min-width:5ch;text-align:right}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.1)}
+th{font-weight:500;color:#d9c7e6;font-size:.9rem}
+td.n{font-family:'Rubik Wet Paint','Impact',sans-serif;color:var(--pumpkin);font-size:1.2rem;width:4rem}
+.scroll{max-height:460px;overflow:auto}
+.empty{color:#d9c7e6;line-height:1.5}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+a.btn,button{font:inherit;font-weight:500;cursor:pointer;text-decoration:none;color:var(--bone);background:transparent;border:2px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 18px}
+a.btn:hover,button:hover{border-color:var(--pumpkin)}
+button.danger:hover{border-color:var(--blood);color:#ff8a9a}
+a:focus-visible,button:focus-visible{outline:3px solid var(--slime);outline-offset:3px}
+.gate{max-width:380px;margin:12vh auto 0;background:var(--bone);color:#2a1633;border-radius:18px;padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.5);transform:rotate(1deg)}
+.gate h2{margin:0 0 6px;font-size:1.2rem}
+.gate p{margin:0 0 16px;line-height:1.45}
+.gate label{display:block;font-weight:500;margin-bottom:6px;font-size:.95rem}
+.gate input{width:100%;font:inherit;color:#2a1633;background:#fff9ea;border:2px solid #cdbb95;border-radius:12px;padding:13px 14px;outline:none;margin-bottom:16px}
+.gate input:focus-visible{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba(255,122,26,.25)}
+.gate button{width:100%;font-weight:700;font-size:1.05rem;color:#2a1000;background:var(--pumpkin);border:0;box-shadow:0 5px 0 #a8480a;padding:14px}
+.gate button:disabled{opacity:.6;cursor:wait}
+.gate button:hover{border:0;filter:brightness(1.06)}
+.gate .err{min-height:1.4em;margin:12px 0 0;color:var(--blood);font-weight:500;text-align:center}
+.gate .back{display:block;text-align:center;margin-top:12px;color:#5b3a6b}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <h2>Az eredmények jelszóval védettek</h2>
+  <p>Add meg a jelszót a szavazatok megtekintéséhez.</p>
+  <label for="pw">Jelszó</label>
+  <input id="pw" type="password" autocomplete="off">
+  <button id="unlock" type="button">Belépés</button>
+  <p class="err" id="pwerr" role="alert"></p>
+  <a class="back" href="szavazas.html">Vissza a szavazáshoz</a>
+</div>
+<div class="wrap" id="wrap" hidden>
+  <h1>Eredmények</h1>
+  <p class="total" id="total"></p>
+  <div class="grid">
+    <section>
+      <h2>Állás jelmezenként</h2>
+      <div id="board"></div>
+    </section>
+    <section>
+      <h2>Ki melyikre szavazott</h2>
+      <div class="scroll" id="list"></div>
+    </section>
+  </div>
+  <div class="actions">
+    <a class="btn" href="szavazas.html">Vissza a szavazáshoz</a>
+    <button id="csv" type="button">Letöltés CSV-ben</button>
+    <button id="reset" type="button" class="danger">Összes szavazat törlése</button>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e}
+const SKEY='halloween_pw';
+let pw=null,timer=null,votes=[];
+
+async function api(body){
+  const r=await fetch('/api/results',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let data={};try{data=await r.json()}catch(e){}
+  return {status:r.status,data:data};
+}
+// 'ok' | 'bad' | 'net' | 'server'
+async function refresh(){
+  try{
+    const res=await api({password:pw});
+    if(res.status===401)return 'bad';
+    if(res.status!==200){$('pwerr').textContent=res.data.error||'Szerverhiba.';return 'server'}
+    votes=res.data.votes||[];render();return 'ok';
+  }catch(e){return 'net'}
+}
+function showGate(text){
+  clearInterval(timer);timer=null;pw=null;
+  try{sessionStorage.removeItem(SKEY)}catch(e){}
+  $('wrap').hidden=true;$('gate').hidden=false;
+  $('pwerr').textContent=text||'';
+}
+function showResults(){
+  $('gate').hidden=true;$('wrap').hidden=false;
+  try{sessionStorage.setItem(SKEY,pw)}catch(e){}
+  if(!timer)timer=setInterval(async()=>{const r=await refresh();if(r==='bad')showGate('A jelszó megváltozott. Lépj be újra.')},5000);
+}
+async function tryUnlock(){
+  pw=$('pw').value;
+  $('unlock').disabled=true;
+  const r=await refresh();
+  $('unlock').disabled=false;
+  if(r==='ok')showResults();
+  else if(r==='bad'){$('pwerr').textContent='Hibás jelszó. Próbáld újra.';$('pw').select()}
+  else if(r==='net')$('pwerr').textContent='Nem sikerült elérni a szervert.';
+}
+
+function render(){
+  $('total').textContent=votes.length?('Eddig '+votes.length+' szavazat érkezett.'):'';
+  const board=$('board'),list=$('list');
+  board.replaceChildren();list.replaceChildren();
+  if(!votes.length){
+    board.append(el('p','Még nincs szavazat. Nyisd meg a szavazóoldalt, és add le az elsőt.','empty'));
+    list.append(el('p','A szavazók neve itt jelenik meg.','empty'));
+    return;
+  }
+  const counts={};
+  votes.forEach(v=>counts[v.szam]=(counts[v.szam]||0)+1);
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]||a[0]-b[0]);
+  const max=sorted[0][1];
+  sorted.forEach(([szam,db])=>{
+    const r=el('div',undefined,'row'+(db===max?' first':''));
+    const bar=el('div',undefined,'bar');const fill=document.createElement('i');fill.style.width=(db/max*100)+'%';bar.append(fill);
+    r.append(el('div',szam,'num'),bar,el('div',db+' szavazat','cnt'));
+    board.append(r);
+  });
+  const t=document.createElement('table');
+  const head=t.createTHead().insertRow();
+  ['Jelmez','Szavazó'].forEach(h=>head.append(el('th',h)));
+  const body=t.createTBody();
+  votes.slice().sort((a,b)=>a.szam-b.szam||a.nev.localeCompare(b.nev,'hu')).forEach(v=>{
+    const tr=body.insertRow();
+    tr.append(el('td',v.szam,'n'),el('td',v.nev));
+  });
+  list.append(t);
+}
+
+$('csv').addEventListener('click',()=>{
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const csv='\ufeffNév;Sorszám\n'+votes.map(v=>q(v.nev)+';'+v.szam).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='jelmezverseny-szavazatok.csv';a.click();
+});
+$('reset').addEventListener('click',async()=>{
+  if(!confirm('Biztosan törlöd az összes szavazatot? Ez nem vonható vissza.'))return;
+  try{await api({password:pw,action:'reset'})}catch(e){alert('A törlés nem sikerült. Próbáld újra.');return}
+  await refresh();
+});
+$('unlock').addEventListener('click',tryUnlock);
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
+
+(async()=>{
+  let saved=null;try{saved=sessionStorage.getItem(SKEY)}catch(e){}
+  if(saved){pw=saved;if(await refresh()==='ok'){showResults();return}pw=null}
+  $('pw').focus();
+})();
+</script>
+</body>
+</html>
